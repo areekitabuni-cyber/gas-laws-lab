@@ -1,0 +1,11 @@
+{
+  "name": "Gas Laws Lab",
+  "short_name": "Gas Laws",
+  "description": "Interactive gas laws calculator and balloon simulation",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f7fa",
+  "theme_color": "#12304a",
+  "icons": []
+}

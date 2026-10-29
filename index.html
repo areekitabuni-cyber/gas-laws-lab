@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#12304a">
+<meta name="description" content="Interactive gas laws calculator and balloon simulation for students.">
+<link rel="manifest" href="manifest.json">
+<title>Gas Laws Lab</title>
+<style>
+:root{--navy:#12304a;--blue:#2879b9;--sky:#eaf4fb;--teal:#168b86;--ink:#1b2b38;--muted:#657785;--line:#dce6ed;--paper:#fff;--gold:#e7b85c}
+*{box-sizing:border-box}body{margin:0;background:#f3f7fa;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.45}
+header{background:linear-gradient(120deg,#12304a,#1e6287);color:white;padding:22px 18px 20px;border-radius:0 0 24px 24px}
+.wrap{max-width:920px;margin:auto}header .eyebrow{font-size:.76rem;letter-spacing:.13em;text-transform:uppercase;opacity:.8;font-weight:700}h1{margin:5px 0 4px;font-size:1.8rem}header p{margin:0;color:#e1eef5;font-size:.94rem}
+main{padding:16px 13px 36px;max-width:920px;margin:auto}.tabs{display:flex;gap:8px;margin:0 0 14px;overflow:auto}.tab{border:1px solid var(--line);background:white;color:var(--navy);padding:10px 14px;border-radius:999px;font-weight:700;white-space:nowrap}.tab.active{background:var(--navy);color:white;border-color:var(--navy)}
+.card{background:white;border:1px solid var(--line);border-radius:18px;padding:17px;margin-bottom:14px;box-shadow:0 4px 16px #12304a0a}.card h2{font-size:1.12rem;margin:0 0 6px;color:var(--navy)}.sub{font-size:.88rem;color:var(--muted);margin:0 0 15px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field label{display:block;font-size:.82rem;font-weight:700;color:#405564;margin-bottom:5px}.field input,.field select{width:100%;padding:11px 10px;border:1px solid #cbd9e2;border-radius:10px;background:#fff;color:var(--ink);font-size:1rem;min-width:0}.field small{color:var(--muted);font-size:.76rem}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.btn{border:0;border-radius:11px;padding:11px 15px;font-size:.94rem;font-weight:750;background:var(--blue);color:#fff;cursor:pointer}.btn.secondary{background:#eaf2f7;color:var(--navy)}.btn:active{transform:scale(.99)}
+.result{background:var(--sky);border:1px solid #cfe4f2;border-radius:13px;padding:13px;margin-top:14px}.result .big{font-size:1.5rem;font-weight:800;color:var(--navy);overflow-wrap:anywhere}.result p{margin:4px 0 0;font-size:.87rem;color:#476071}
+.formula{font-family:Georgia,serif;font-size:1.15rem;text-align:center;padding:13px;background:#f7fafc;border-radius:12px;margin:10px 0;color:#173d59}.note{font-size:.84rem;color:var(--muted)}.error{color:#a12c2c;font-weight:700;margin-top:9px}
+.balloon-stage{position:relative;min-height:245px;background:linear-gradient(#f1f8fc,#fff);border-radius:14px;overflow:hidden;display:flex;align-items:center;justify-content:center;border:1px solid #e1edf3}
+.balloon{width:150px;height:180px;border-radius:50% 50% 46% 46%;background:radial-gradient(circle at 32% 25%,#ffffffb8 0 5%,transparent 14%),radial-gradient(circle at 35% 30%,#ff9a9a,#e34655 52%,#b92438);box-shadow:inset -13px -10px 20px #74152b33,0 12px 22px #173d591b;position:relative;transition:width .25s,height .25s,background .25s}
+.balloon:after{content:"";position:absolute;bottom:-10px;left:calc(50% - 7px);border-left:7px solid transparent;border-right:7px solid transparent;border-top:12px solid #d63849}
+.balloon-string{position:absolute;top:calc(50% + 83px);height:38px;width:1px;background:#9aa8b1;transform:rotate(3deg)}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.metric{background:#f5f9fb;border-radius:11px;padding:10px}.metric span{display:block;color:var(--muted);font-size:.75rem}.metric strong{font-size:1rem;color:var(--navy)}
+.slider{width:100%;accent-color:var(--blue)}.steps{padding-left:20px}.steps li{margin:7px 0}.footer{text-align:center;color:var(--muted);font-size:.78rem;padding:8px 0 20px}
+@media(min-width:650px){header{padding:28px 24px}h1{font-size:2.15rem}main{padding:22px 18px}.grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}.card{padding:21px}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="eyebrow">Student learning tool</div><h1>Gas Laws Lab</h1><p>Calculate gas properties, follow the steps, and explore how a balloon responds.</p></div></header>
+<main>
+<div class="tabs" role="tablist">
+<button class="tab active" data-tab="calculator">Calculator</button>
+<button class="tab" data-tab="balloon-tab">Balloon simulation</button>
+<button class="tab" data-tab="guide">Formula guide</button>
+</div>
+<section id="calculator" class="panel">
+<div class="card">
+<h2>Choose a gas law</h2><p class="sub">Enter the known values, choose what to calculate, then press Solve.</p>
+<div class="field"><label for="law">Equation</label><select id="law">
+<option value="combined">Combined gas law (P₁V₁/T₁ = P₂V₂/T₂)</option>
+<option value="charles">Charles's law (V₁/T₁ = V₂/T₂)</option>
+<option value="boyle">Boyle's law (P₁V₁ = P₂V₂)</option>
+<option value="gay">Gay-Lussac's law (P₁/T₁ = P₂/T₂)</option>
+<option value="ideal">Ideal gas law (PV = nRT)</option>
+</select></div>
+<div id="inputs" class="grid" style="margin-top:13px"></div>
+<div class="row" style="margin-top:14px"><button class="btn" id="solve">Solve step by step</button><button class="btn secondary" id="example">Load example</button><button class="btn secondary" id="reset">Reset</button></div>
+<div id="answer" aria-live="polite"></div>
+</div>
+<div class="card"><h2>Important unit rule</h2><p class="note">Always use absolute temperature in kelvin (K). Convert °C to K by adding 273.15. Keep pressure units consistent on both sides and volume units consistent on both sides. For the ideal gas law, use R = 8.314 kPa·L/(mol·K) when pressure is in kPa and volume in L, or R = 0.082057 L·atm/(mol·K) when pressure is in atm.</p></div>
+</section>
+<section id="balloon-tab" class="panel" hidden>
+<div class="card"><h2>Explore a flexible balloon</h2><p class="sub">This simplified simulation assumes a fixed amount of ideal gas and constant external pressure unless you change pressure. It illustrates the gas-law trend, not real balloon material limits.</p>
+<div class="balloon-stage"><div id="balloon" class="balloon"></div><div class="balloon-string"></div></div>
+<div class="metrics"><div class="metric"><span>Temperature</span><strong id="tempOut">300 K</strong></div><div class="metric"><span>Pressure</span><strong id="presOut">101.3 kPa</strong></div><div class="metric"><span>Relative volume</span><strong id="volOut">100%</strong></div></div>
+<div style="margin-top:16px"><div class="field"><label for="tempSlider">Temperature: <span id="tempLabel">300 K</span></label><input class="slider" id="tempSlider" type="range" min="180" max="420" value="300"></div>
+<div class="field" style="margin-top:13px"><label for="presSlider">Pressure: <span id="presLabel">101.3 kPa</span></label><input class="slider" id="presSlider" type="range" min="60" max="180" value="101.3" step="0.1"></div>
+</div><div class="formula" id="balloonFormula">V ∝ T / P</div><p class="note">At constant pressure, raising temperature increases volume. At constant temperature, raising pressure decreases volume.</p>
+</div>
+</section>
+<section id="guide" class="panel" hidden>
+<div class="card"><h2>Formula guide</h2>
+<div class="formula">Boyle: P₁V₁ = P₂V₂</div><p class="note">Constant temperature and fixed amount of gas.</p>
+<div class="formula">Charles: V₁/T₁ = V₂/T₂</div><p class="note">Constant pressure and fixed amount of gas.</p>
+<div class="formula">Gay-Lussac: P₁/T₁ = P₂/T₂</div><p class="note">Constant volume and fixed amount of gas.</p>
+<div class="formula">Combined: P₁V₁/T₁ = P₂V₂/T₂</div><p class="note">Same gas sample between two equilibrium states.</p>
+<div class="formula">Ideal gas: PV = nRT</div><p class="note">P = pressure, V = volume, n = amount in moles, R = gas constant, T = kelvin temperature.</p>
+<h2 style="margin-top:18px">How to solve problems</h2><ol class="steps"><li>Write down the known values and identify the unknown.</li><li>Convert temperatures to kelvin.</li><li>Choose the correct law and rearrange it for the unknown.</li><li>Substitute values with consistent units.</li><li>Check whether the answer makes physical sense.</li></ol>
+</div>
+</section>
+<div class="footer">Gas Laws Lab · For learning and practice · Ideal-gas approximation</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const defs={
+combined:[['p1','Initial pressure P₁','kPa',101.3],['v1','Initial volume V₁','L',113],['t1','Initial temperature T₁','K',300.15],['p2','Final pressure P₂','kPa',101.3],['v2','Final volume V₂','L',73.47],['t2','Final temperature T₂','K',195.15]],
+charles:[['v1','Initial volume V₁','L',113],['t1','Initial temperature T₁','K',300.15],['v2','Final volume V₂','L',73.47],['t2','Final temperature T₂','K',195.15]],
+boyle:[['p1','Initial pressure P₁','kPa',101.3],['v1','Initial volume V₁','L',113],['p2','Final pressure P₂','kPa',150],['v2','Final volume V₂','L',76.25]],
+gay:[['p1','Initial pressure P₁','kPa',101.3],['t1','Initial temperature T₁','K',300.15],['p2','Final pressure P₂','kPa',65.9],['t2','Final temperature T₂','K',195.15]],
+ideal:[['p','Pressure P','atm',1],['v','Volume V','L',24],['n','Amount n','mol',1],['t','Temperature T','K',298]]
+};
+const unknowns={combined:['v2','Final volume V₂','L'],charles:['v2','Final volume V₂','L'],boyle:['v2','Final volume V₂','L'],gay:['p2','Final pressure P₂','kPa'],ideal:['p','Pressure P','atm','v','Volume V','L','n','Amount n','mol','t','Temperature T','K']};
+function renderInputs(){let law=$('law').value;let d=defs[law];$('inputs').innerHTML=d.map(([id,label,unit,val])=>`<div class="field"><label for="${id}">${label} (${unit})</label><input id="${id}" type="number" step="any" value="${val}"></div>`).join('');let opts=law==='ideal'?[['p','Pressure P (atm)'],['v','Volume V (L)'],['n','Amount n (mol)'],['t','Temperature T (K)']]:law==='combined'?[['v2','Final volume V₂ (L)'],['p2','Final pressure P₂ (kPa)'],['t2','Final temperature T₂ (K)'],['p1','Initial pressure P₁ (kPa)'],['v1','Initial volume V₁ (L)'],['t1','Initial temperature T₁ (K)']]:law==='charles'?[['v2','Final volume V₂ (L)'],['t2','Final temperature T₂ (K)'],['v1','Initial volume V₁ (L)'],['t1','Initial temperature T₁ (K)']]:law==='boyle'?[['v2','Final volume V₂ (L)'],['p2','Final pressure P₂ (kPa)'],['p1','Initial pressure P₁ (kPa)'],['v1','Initial volume V₁ (L)']]:[['p2','Final pressure P₂ (kPa)'],['t2','Final temperature T₂ (K)'],['p1','Initial pressure P₁ (kPa)'],['t1','Initial temperature T₁ (K)']];let s=document.createElement('div');s.className='field';s.style.marginTop='12px';s.innerHTML='<label for="unknown">Calculate unknown</label><select id="unknown">'+opts.map(([v,l])=>`<option value="${v}">${l}</option>`).join('')+'</select>'; $('inputs').appendChild(s);}
+function num(id){let el=$(id);return el?Number(el.value):NaN}
+function fmt(x){return Number.isFinite(x)?Number(x.toPrecision(7)).toString():'—'}
+function solve(){const law=$('law').value,u=$('unknown').value;let val,eq,steps=[],unit='';const get=id=>num(id);
+if([...document.querySelectorAll('#inputs input')].some(e=>e.value===''||!Number.isFinite(Number(e.value)))){$('answer').innerHTML='<div class="error">Enter a valid number in every field.</div>';return}
+if(law==='combined'){
+const {p1,v1,t1,p2,t2}=Object.fromEntries(['p1','v1','t1','p2','t2'].map(k=>[k,get(k)]));
+if([p1,v1,t1,p2,t2].some(x=>x<=0)){err();return}
+const map={v2:{v:p1*v1*t2/(t1*p2),unit:'L',eq:'V₂ = P₁V₁T₂ / (T₁P₂)'},p2:{v:p1*v1*t2/(t1*get('v2')),unit:'kPa',eq:'P₂ = P₁V₁T₂ / (T₁V₂)'},t2:{v:p2*get('v2')*t1/(p1*v1),unit:'K',eq:'T₂ = P₂V₂T₁ / (P₁V₁)'},p1:{v:p2*get('v2')*t1/(v1*t2),unit:'kPa',eq:'P₁ = P₂V₂T₁ / (V₁T₂)'},v1:{v:p2*get('v2')*t1/(p1*t2),unit:'L',eq:'V₁ = P₂V₂T₁ / (P₁T₂)'},t1:{v:p1*v1*t2/(p2*get('v2')),unit:'K',eq:'T₁ = P₁V₁T₂ / (P₂V₂)'}};({v:val,unit,eq}=map[u]);steps=['Start with P₁V₁/T₁ = P₂V₂/T₂.',eq,`Substitute the known values to obtain ${fmt(val)} ${unit}.`];
+}else if(law==='charles'){let v1=get('v1'),t1=get('t1'),t2=get('t2'),v2=get('v2');if([v1,t1,t2,v2].some(x=>x<=0)){err();return}if(u==='v2'){val=v1*t2/t1;unit='L';eq='V₂ = V₁T₂/T₁'}else if(u==='t2'){val=v2*t1/v1;unit='K';eq='T₂ = V₂T₁/V₁'}else if(u==='v1'){val=v2*t1/t2;unit='L';eq='V₁ = V₂T₁/T₂'}else{val=v1*t2/v2;unit='K';eq='T₁ = V₁T₂/V₂'}steps=['Start with V₁/T₁ = V₂/T₂.',eq,`Substitute the known values to obtain ${fmt(val)} ${unit}.`];
+}else if(law==='boyle'){let p1=get('p1'),v1=get('v1'),p2=get('p2'),v2=get('v2');if([p1,v1,p2,v2].some(x=>x<=0)){err();return}if(u==='v2'){val=p1*v1/p2;unit='L';eq='V₂ = P₁V₁/P₂'}else if(u==='p2'){val=p1*v1/v2;unit='kPa';eq='P₂ = P₁V₁/V₂'}else if(u==='p1'){val=p2*v2/v1;unit='kPa';eq='P₁ = P₂V₂/V₁'}else{val=p2*v2/p1;unit='L';eq='V₁ = P₂V₂/P₁'}steps=['Start with P₁V₁ = P₂V₂.',eq,`Substitute the known values to obtain ${fmt(val)} ${unit}.`];
+}else if(law==='gay'){let p1=get('p1'),t1=get('t1'),t2=get('t2'),p2=get('p2');if([p1,t1,t2,p2].some(x=>x<=0)){err();return}if(u==='p2'){val=p1*t2/t1;unit='kPa';eq='P₂ = P₁T₂/T₁'}else if(u==='t2'){val=p2*t1/p1;unit='K';eq='T₂ = P₂T₁/P₁'}else if(u==='p1'){val=p2*t1/t2;unit='kPa';eq='P₁ = P₂T₁/T₂'}else{val=p1*t2/p2;unit='K';eq='T₁ = P₁T₂/P₂'}steps=['Start with P₁/T₁ = P₂/T₂.',eq,`Substitute the known values to obtain ${fmt(val)} ${unit}.`];
+}else{let p=get('p'),v=get('v'),n=get('n'),t=get('t');if([p,v,n,t].some(x=>x<=0)){err();return}const R=.082057;if(u==='p'){val=n*R*t/v;unit='atm';eq='P = nRT/V'}else if(u==='v'){val=n*R*t/p;unit='L';eq='V = nRT/P'}else if(u==='n'){val=p*v/(R*t);unit='mol';eq='n = PV/RT'}else{val=p*v/(n*R);unit='K';eq='T = PV/nR'}steps=['Start with PV = nRT.',eq,`Use R = 0.082057 L·atm/(mol·K). Result: ${fmt(val)} ${unit}.`]}
+if(!Number.isFinite(val)||val<=0){err();return}
+$('answer').innerHTML=`<div class="result"><div class="note">Calculated answer</div><div class="big">${fmt(val)} ${unit}</div><div class="formula">${eq}</div><strong>Steps</strong><ol class="steps">${steps.map(s=>`<li>${s}</li>`).join('')}</ol><p>Check: temperatures must be in kelvin, and pressure/volume units must be consistent.</p></div>`;
+}
+function err(){$('answer').innerHTML='<div class="error">Values must be greater than zero. Check the units and inputs.</div>'}
+$('law').addEventListener('change',()=>{$('answer').innerHTML='';renderInputs()});$('solve').addEventListener('click',solve);
+$('example').addEventListener('click',()=>{let law=$('law').value;renderInputs();if(law==='combined'){Object.entries({p1:101.3,v1:113,t1:300.15,p2:101.3,t2:195.15}).forEach(([k,v])=>$(k).value=v);$('unknown').value='v2'}else if(law==='charles'){Object.entries({v1:113,t1:300.15,t2:195.15}).forEach(([k,v])=>$(k).value=v);$('unknown').value='v2'}else if(law==='boyle'){Object.entries({p1:101.3,v1:113,p2:150}).forEach(([k,v])=>$(k).value=v);$('unknown').value='v2'}else if(law==='gay'){Object.entries({p1:101.3,t1:300.15,t2:195.15}).forEach(([k,v])=>$(k).value=v);$('unknown').value='p2'}else{Object.entries({p:1,v:24,n:1,t:298}).forEach(([k,v])=>$(k).value=v);$('unknown').value='p'}solve()});
+$('reset').addEventListener('click',()=>{renderInputs();$('answer').innerHTML=''});
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.panel').forEach(p=>p.hidden=p.id!==b.dataset.tab)}));
+renderInputs();
+function balloonUpdate(){const T=Number($('tempSlider').value),P=Number($('presSlider').value),ratio=(T/300)*(101.3/P);const scale=Math.max(.55,Math.min(1.42,Math.sqrt(ratio)));$('balloon').style.width=(150*scale)+'px';$('balloon').style.height=(180*scale)+'px';$('tempOut').textContent=T+' K';$('presOut').textContent=P.toFixed(1)+' kPa';$('volOut').textContent=(ratio*100).toFixed(0)+'%';$('tempLabel').textContent=T+' K';$('presLabel').textContent=P.toFixed(1)+' kPa';$('balloonFormula').textContent=`V₂/V₁ ≈ (T₂/T₁) × (P₁/P₂) = ${ratio.toFixed(2)}`}
+$('tempSlider').addEventListener('input',balloonUpdate);$('presSlider').addEventListener('input',balloonUpdate);balloonUpdate();
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}))}
+</script>
+</body>
+</html>
